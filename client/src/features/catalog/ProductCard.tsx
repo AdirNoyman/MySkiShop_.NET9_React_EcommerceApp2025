@@ -1,5 +1,6 @@
 import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@mui/material";
 import { Product } from "../../app/models/product";
+import { Link } from "react-router";
 
 type Props = {
 
@@ -8,7 +9,7 @@ type Props = {
 
 const ProductCard = ({ product }: Props) => {
 
-    const { name: productName, price, pictureUrl } = product;
+    const { id, name: productName, price, pictureUrl } = product;
   return (
     <div>        
           <Card elevation={3} sx={{width: 280, borderRadius: 2, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
@@ -19,7 +20,7 @@ const ProductCard = ({ product }: Props) => {
             </CardContent>
             <CardActions sx={{justifyContent: 'space-between'}}>
                 <Button>Add to Cart</Button>
-                <Button>View Details</Button>
+                <Button component={Link} to={`/catalog/${id}`}>View Details</Button>
             </CardActions>
           </Card>
     </div>
