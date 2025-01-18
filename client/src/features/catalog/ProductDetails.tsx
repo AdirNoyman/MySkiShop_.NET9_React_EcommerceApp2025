@@ -1,7 +1,4 @@
 import { useParams } from 'react-router';
-import { Product } from '../../app/models/product';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
   Button,
   Divider,
@@ -14,28 +11,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useFetchProductDetailsQuery } from './catalogApi';
 
 const ProductDetails = () => {
   // Get the id from the URL
   const { id } = useParams();
+  const {data: product, isLoading} = useFetchProductDetailsQuery(Number(id));
 
-  const url = 'https://localhost:5001/api/products';
-
-  const [product, setProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    axios
-      .get(`${url}/${id}`)
-      .then((response) => {
-        setProduct(response.data);
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.log('Error fetching product details 😫', error);
-      });
-  }, [id]);
-
-  if (!product) return <div>Loading 🙄...</div>;
+  if (!product || isLoading) return <div>Loading 🙄...</div>;
 
   const productDetails = [
     { label: 'Name', value: product.name },
