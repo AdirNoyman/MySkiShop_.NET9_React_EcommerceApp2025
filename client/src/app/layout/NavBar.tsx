@@ -3,6 +3,7 @@ import {
   Badge,
   Box,
   IconButton,
+  LinearProgress,
   List,
   ListItem,
   Toolbar,
@@ -11,6 +12,8 @@ import {
 import DarkModeSwitch from '../components/DarkModeSwitch';
 import { NavLink } from 'react-router';
 import { ShoppingCart } from '@mui/icons-material';
+import { useAppDispatch, useAppSelector } from '../store/store';
+import { setDarkMode } from './uiSlice';
 
 const middleLinks = [
   { title: 'catalog', path: '/catalog' },
@@ -31,11 +34,13 @@ const navStyles = {
   '&.active': { color: '#baecf9' },
 };
 
-type Props = {
-  switchDarkMode: () => void;
-};
 
-const NavBar = ({ switchDarkMode }: Props) => {
+const NavBar = () => {
+
+  const {isLoading} = useAppSelector((state => state.ui));
+
+  const dispatch = useAppDispatch();
+
   return (
     <AppBar position="fixed" >
       <Toolbar
@@ -50,7 +55,7 @@ const NavBar = ({ switchDarkMode }: Props) => {
         >
           MySkiShop
         </Typography>
-        <DarkModeSwitch onClick={() => switchDarkMode()} />
+        <DarkModeSwitch onClick={() => dispatch(setDarkMode())} />
         </Box>
         
         <List sx={{ display: 'flex' }}>
@@ -86,6 +91,9 @@ const NavBar = ({ switchDarkMode }: Props) => {
         </List>
         </Box>
       </Toolbar>
+      {isLoading && <Box sx={{ width: '100%' }}>
+        <LinearProgress color="secondary" />
+        </Box>}
     </AppBar>
   );
 };
