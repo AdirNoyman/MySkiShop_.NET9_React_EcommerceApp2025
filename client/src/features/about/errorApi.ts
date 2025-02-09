@@ -26,4 +26,4 @@ export const errorApi = createApi({
     })
 })
 // Use lazy queries to prevent the API from being called on component mount. It will only be called when the query is called.
-export const { useLazyGet400ErrorQuery,useGet401ErrorQuery, useGet404ErrorQuery,useGet500ErrorQuery,useGetValidationErrorQuery } = errorApi;
+export const { useLazyGet400ErrorQuery,useLazyGet401ErrorQuery, useLazyGet404ErrorQuery,useLazyGet500ErrorQuery,useLazyGetValidationErrorQuery } = errorApi;
