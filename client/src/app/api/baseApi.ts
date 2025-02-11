@@ -5,6 +5,7 @@ import {
 } from '@reduxjs/toolkit/query';
 import { startLoading, stopLoading } from '../layout/uiSlice';
 import { toast } from 'react-toastify';
+import { router } from '../routes/Routes';
 // Create a custom base fetch
 const customBaseQuery = fetchBaseQuery({
   baseUrl: 'https://localhost:5001/api',
@@ -33,19 +34,26 @@ export const baseQueryWithErrorHandling = async (
       status,
       result.error
     );
+
+    console.log(data);
+
     // Check what error status is returned and handle it accordingly
     switch (status) {
       case 400:
-        toast.error(data.title);
+        if (data.errors) {
+          throw Object.values(data.errors).flat().join(',');
+        } else {
+          toast.error(data.title);
+        }
         break;
       case 401:
         toast.error(data.title);
         break;
       case 404:
-        toast.error(data.title);
+        router.navigate('/not-found');
         break;
       case 500:
-        toast.error(data.title);
+        router.navigate('/server-error', { state: { error: data } });
         break;
       default:
         break;
