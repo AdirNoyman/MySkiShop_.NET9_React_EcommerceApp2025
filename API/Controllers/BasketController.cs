@@ -1,4 +1,5 @@
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,23 +33,36 @@ namespace API.Controllers
 
             Response.Cookies.Append("basketId", basketId, cookieOptions);
 
-            var basket = new Basket {BasketId = basketId};
+            var basket = new Basket { BasketId = basketId };
 
             context.Baskets.Add(basket);
 
-            return basket;      
+            return basket;
         }
 
 
         [HttpGet]
-        public async Task<ActionResult<Basket>> GetBasket()
+        public async Task<ActionResult<BasketDTO>> GetBasket()
         {
             var basket = await RetrieveBasket();
 
             // We will get the basket Id from the user's cookie he sent us via the request and if we can't find the basket we will return 'no content'
             if (basket == null) return NoContent();
 
-            return basket;
+            return new BasketDTO
+            {
+                BasketId = basket.BasketId,
+                BasketItems = [.. basket.BasketItems.Select(item => new BasketItemDTO
+                {
+                    ProductId = item.Product.Id,
+                    Name = item.Product.Name,
+                    Price = item.Product.Price,
+                    PictureUrl = item.Product.PictureUrl,
+                    Brand = item.Product.Brand,
+                    Type = item.Product.Type,
+                    Quantity = item.Quantity
+                })]
+            };
 
         }
 
@@ -69,7 +83,7 @@ namespace API.Controllers
             // Add the Item (product + quantity) to basket
             basket.AddItem(product, quantity);
 
-            // Save the changes to the database
+            // Save all the changes of this transaction to the database
             var result = await context.SaveChangesAsync() > 0;
 
             // Return a response back to client
@@ -81,19 +95,19 @@ namespace API.Controllers
 
 
 
-        [HttpDelete]
-        public async Task<ActionResult> RemoveItemFromBasket(int productId, int quantity)
-        {
-            // Get the client basket
+        // [HttpDelete]
+        // public async Task<ActionResult> RemoveItemFromBasket(int productId, int quantity)
+        // {
+        //     // Get the client basket
 
-            // If there is no basket, return 'no content'
+        //     // If there is no basket, return 'no content'
 
-            // Remove the item from the basket or just reduce the quantity
+        //     // Remove the item from the basket or just reduce the quantity
 
-            // Save the changes
+        //     // Save the changes
 
-            // Return a response back to client
-        }
+        //     // Return a response back to client
+        // }
 
     }
 }
