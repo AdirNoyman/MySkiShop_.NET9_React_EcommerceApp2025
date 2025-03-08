@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace API.Entities
 {
@@ -12,6 +8,12 @@ namespace API.Entities
         public required string BasketId { get; set; }
         // 1 Basket can be related to 1 Product or more
         public List<BasketItem> BasketItems { get; set; } = [];
+
+        private BasketItem? FindItem(int productId)
+        {
+            // If the product is not found, return null
+            return BasketItems.FirstOrDefault(item => item.ProductId == productId);
+        }
 
         public void AddItem(Product product, int quantity)
         {
@@ -43,22 +45,13 @@ namespace API.Entities
 
             var itemToRemove = FindItem(productId);
 
-            if (itemToRemove == null)return;
+            if (itemToRemove == null) return;
 
             itemToRemove.Quantity -= quantity;
 
-            if (quantity <= 0)
-            {
-                BasketItems.Remove(itemToRemove);
-            }          
-      
-        }
-        
+            if (itemToRemove.Quantity <= 0) BasketItems.Remove(itemToRemove);
 
-        private BasketItem? FindItem(int productId)
-        {
-            // If the product is not found, return null
-            return BasketItems.FirstOrDefault(item => item.ProductId == productId);
         }
+
     }
 }

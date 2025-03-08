@@ -1,6 +1,7 @@
 using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace API.Controllers
     public class BasketController(StoreContext context) : BaseApiController
     {
 
-        // RetrieveBasket method
+        // Retrieve Basket from the Database
         private async Task<Basket?> RetrieveBasket()
         {
             return await context.Baskets.Include(basket => basket.BasketItems)
@@ -17,7 +18,7 @@ namespace API.Controllers
                 .FirstOrDefaultAsync(basket => basket.BasketId == Request.Cookies["basketId"]);
         }
 
-        // CreateBasket method
+        // Create Basket in the context (before saving it to the database)
         private Basket CreateBasket()
         {
             // Create Id for the new basket
@@ -49,25 +50,12 @@ namespace API.Controllers
             // We will get the basket Id from the user's cookie he sent us via the request and if we can't find the basket we will return 'no content'
             if (basket == null) return NoContent();
 
-            return new BasketDTO
-            {
-                BasketId = basket.BasketId,
-                BasketItems = [.. basket.BasketItems.Select(item => new BasketItemDTO
-                {
-                    ProductId = item.Product.Id,
-                    Name = item.Product.Name,
-                    Price = item.Product.Price,
-                    PictureUrl = item.Product.PictureUrl,
-                    Brand = item.Product.Brand,
-                    Type = item.Product.Type,
-                    Quantity = item.Quantity
-                })]
-            };
+            return basket.ToDto();
 
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddItemToBasket(int productId, int quantity)
+        public async Task<ActionResult<BasketDTO>> AddItemToBasket(int productId, int quantity)
         {
             // Get the client basket
             var basket = await RetrieveBasket();
@@ -87,7 +75,7 @@ namespace API.Controllers
             var result = await context.SaveChangesAsync() > 0;
 
             // Return a response back to client
-            if (result) return CreatedAtAction(nameof(GetBasket), basket);
+            if (result) return CreatedAtAction(nameof(GetBasket), basket.ToDto());
 
             // If the result is false, return a bad request
             return BadRequest("Problem updating the basket 😫");
@@ -95,19 +83,27 @@ namespace API.Controllers
 
 
 
-        // [HttpDelete]
-        // public async Task<ActionResult> RemoveItemFromBasket(int productId, int quantity)
-        // {
-        //     // Get the client basket
+        [HttpDelete]
+        public async Task<ActionResult> RemoveItemFromBasket(int productId, int quantity)
+        {
+            // Get the client basket
+            var basket = await RetrieveBasket();
 
-        //     // If there is no basket, return 'no content'
+            // If there is no basket, return 'no content'
+            if (basket == null) return BadRequest("Basket not found 🤷‍♂️");
 
-        //     // Remove the item from the basket or just reduce the quantity
+            // Remove the item from the basket or just reduce the quantity
+            basket.RemoveItem(productId, quantity);
 
-        //     // Save the changes
+            // Save the changes
+            var result = await context.SaveChangesAsync() > 0;
 
-        //     // Return a response back to client
-        // }
+            // Return a response back to client
+            if (result) return Ok();
+
+            // If the result is false, return a bad request
+            return BadRequest("Problem updating the basket 😫");
+        }
 
     }
 }
